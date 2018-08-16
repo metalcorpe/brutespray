@@ -189,6 +189,7 @@ def make_dic_gnmap():
                     else:
                         if name == "mssql_login":
                             name = "mssql"
+                        #     TODO: smb_login wont always work
                         if name == "microsoft-ds":
                             name = "smb_login"
                         if name == "ftp":
