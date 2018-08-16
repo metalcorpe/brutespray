@@ -16,7 +16,6 @@ from multiprocessing import Process
 
 services = {}
 loading = False
-use_patator = None
 
 
 class colors:
@@ -145,8 +144,7 @@ def make_dic_gnmap():
     port = None
     with open(args.file, 'r') as nmap_file:
         for line in nmap_file:
-            supported = ['ssh', 'ftp', 'postgres', 'telnet', 'mysql', 'ms-sql-s', 'shell', 'vnc', 'imap', 'imaps',
-                         'nntp', 'pcanywheredata', 'pop3', 'pop3s', 'exec', 'login', 'microsoft-ds', 'smtp', 'smtps',
+            supported = ['ssh', 'ftp', 'postgres', 'telnet', 'mysql', 'ms-sql-s', 'shell', 'vnc', 'imap', 'imaps', 'microsoft-ds', 'nntp', 'pcanywheredata', 'pop3', 'pop3s', 'exec', 'login', 'mi666crosoft-ds', 'smtp', 'smtps',
                          'submission', 'svn', 'iss-realsecure', 'snmptrap', 'snmp']
             for name in supported:
                 matches = re.compile(r'([0-9][0-9]*)/open/[a-z][a-z]*//' + name)
@@ -158,7 +156,7 @@ def make_dic_gnmap():
                 ip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', line)
                 tmp_ports = matches.findall(line)
                 for tmp_port in tmp_ports:
-                    if use_patator is False:
+                    if args.use_patator is False:
                         if name == "ms-sql-s":
                             name = "mssql"
                         if name == "microsoft-ds":
@@ -268,7 +266,7 @@ def make_dic_xml():
                 name = port_name.encode("utf-8")
                 tmp_port = pn.encode("utf-8")
                 if name in supported:
-                    if use_patator is False:
+                    if args.use_patator is False:
                         if name == "postgresql":
                             name = "postgres"
                         if name == "ms-sql-s":
@@ -361,7 +359,7 @@ def brute(service, port, fname, output):
     else:
         aarg = ''
         auth = ''
-    if use_patator is False:
+    if args.use_patator is False:
         p = subprocess.Popen(['medusa',
                               '-H', fname, uarg, userlist, parg, passlist,
                               '-M', service,
@@ -372,12 +370,13 @@ def brute(service, port, fname, output):
     else:
         host = open(fname,'r')
         for line in host:
+	    print(line[:-1], service)
             p = subprocess.Popen(['patator', service,
                                   'host='+ line[:-1],
                                   'port='+ port,
                                   'user=' + userlist,
                                   ('auth_key=' if service == "snmp_login" else 'password=' + passlist),
-                                  '-l '+output
+                                  '-l', output, '-L', 'patator'
                                   ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=-1)
 
     out = "[" + colors.green + "+" + colors.normal + "] "
@@ -453,7 +452,6 @@ if __name__ == "__main__":
     print(banner)
     args = parse_args()
 
-    use_patator = args.use_patator
     supported = ['ssh', 'ftp', 'telnet', 'vnc', 'mssql', 'mysql', 'postgresql', 'rsh', 'imap', 'nntp', 'pcanywhere',
                  'pop3', 'rexec', 'rlogin', 'smbnt', 'smtp', 'svn', 'vmauthd', 'snmp']
     # temporary directory for ip addresses
@@ -471,7 +469,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.output):
         os.mkdir(args.output)
 
-    if use_patator is False:
+    if args.use_patator is False:
         if os.system("command -v medusa > /dev/null") != 0:
             sys.stderr.write("Command medusa not found. Please install medusa before using brutespray")
             exit(3)
